@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../utils/api'
 import { format } from 'date-fns'
+import NewHabitModal from '../components/NewHabitModal'
 
 export default function Dashboard() {
   const [habits, setHabits] = useState([])
@@ -23,7 +24,15 @@ export default function Dashboard() {
         }),
       ])
 
-      setHabits(habitsData)
+      // Filter habits: only show habits created on or before today
+      const today = new Date()
+      const filteredHabits = habitsData.filter((habit) => {
+        if (!habit.createdAt) return true // Include habits without createdAt
+        const habitCreatedDate = new Date(habit.createdAt)
+        return habitCreatedDate <= today
+      })
+
+      setHabits(filteredHabits)
 
       // Build set of today's checkins
       const checkinSet = new Set()
@@ -38,24 +47,31 @@ export default function Dashboard() {
     }
   }
 
-  const handleToggleCheckin = async (habitId) => {
+  const handleToggleCheckin = async (habit) => {
     try {
-      if (todayCheckins.has(habitId)) {
+      if (todayCheckins.has(habit.id) || habit.is_completed === true) {
         return
       }
 
-      await api.createCheckin(habitId, {
+      await api.createCheckin(habit.id, {
         checkedAt: new Date().toISOString(),
         quantity: 1,
       })
 
-      setTodayCheckins(new Set([...todayCheckins, habitId]))
+      // Persist completion status on the habit itself
+      await api.updateHabit(habit.id, { is_completed: true })
+
+      setTodayCheckins(new Set([...todayCheckins, habit.id]))
+      // Optimistically reflect completion on local habit state
+      setHabits((prev) => prev.map(h => h.id === habit.id ? { ...h, is_completed: true } : h))
     } catch (error) {
       console.error('Failed to create checkin:', error)
     }
   }
 
-  const completedCount = todayCheckins.size
+  // Consider a habit completed if it has a today check-in OR the document says it's completed
+  const isHabitCompleted = (habit) => todayCheckins.has(habit.id) || habit.is_completed === true
+  const completedCount = habits.filter(isHabitCompleted).length
   const totalCount = habits.length
   const completionPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0
 
@@ -118,16 +134,21 @@ export default function Dashboard() {
       </div>
 
       {/* Habits List */}
-      <div className="bg-white rounded-2xl p-8 shadow-md border border-slate-200">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-slate-900">Today's Habits</h2>
-          <button
-            onClick={() => setShowNewHabit(true)}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
-          >
-            <span className="text-xl">+</span>
-            New Habit
-          </button>
+      <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-md border border-slate-200">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Today's Habits</h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowNewHabit(true)}
+              className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition-colors text-sm font-semibold"
+              title="Create new habit"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New Habit
+            </button>
+          </div>
         </div>
 
         {habits.length === 0 ? (
@@ -145,62 +166,61 @@ export default function Dashboard() {
             </button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-2 sm:space-y-3">
             {habits.map((habit) => {
-              const isCompleted = todayCheckins.has(habit.id)
+              const isCompleted = isHabitCompleted(habit)
               return (
                 <div
                   key={habit.id}
-                  className={`group relative flex items-center gap-5 p-5 rounded-xl border-2 transition-all cursor-pointer ${
+                  className={`group relative flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl border-2 transition-all cursor-pointer ${
                     isCompleted
                       ? 'bg-green-50 border-green-300'
                       : 'bg-white border-slate-200 hover:border-blue-300 hover:shadow-md'
                   }`}
-                  onClick={() => !isCompleted && handleToggleCheckin(habit.id)}
+                  onClick={() => !isCompleted && handleToggleCheckin(habit)}
                 >
                   {/* Checkbox */}
                   <button
-                    className={`flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center transition-all ${
+                    className={`flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center transition-all ${
                       isCompleted
                         ? 'bg-green-500 text-white'
                         : 'bg-slate-100 border-2 border-slate-300 group-hover:border-blue-500'
                     }`}
                   >
                     {isCompleted && (
-                      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
                   </button>
 
                   {/* Emoji */}
-                  <div className={`text-4xl ${isCompleted ? 'opacity-50' : ''}`}>
+                  <div className={`text-xl sm:text-2xl flex-shrink-0 ${isCompleted ? 'opacity-50' : ''}`}>
                     {habit.emoji}
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className={`text-lg font-bold mb-1 ${isCompleted ? 'line-through text-slate-500' : 'text-slate-900'}`}>
+                  <div className="flex-1 min-w-0 flex items-center gap-1 sm:gap-2">
+                    <h3 className={`text-sm sm:text-base font-semibold truncate ${isCompleted ? 'line-through text-slate-500' : 'text-slate-900'}`}>
                       {habit.title}
                     </h3>
                     {habit.description && (
-                      <p className="text-sm text-slate-600 line-clamp-1">{habit.description}</p>
+                      <span className="hidden lg:inline text-sm text-slate-500 truncate">
+                        • {habit.description}
+                      </span>
                     )}
                   </div>
 
-                  {/* Frequency Badge */}
-                  <div className="flex items-center gap-3">
-                    <span className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold">
+                  {/* Frequency Badge & Status */}
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                    <span className="px-2 py-1 sm:px-3 sm:py-1.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold whitespace-nowrap">
                       {habit.frequency === 'daily' ? 'Daily' : habit.frequency}
                     </span>
                     
                     {isCompleted && (
-                      <div className="flex items-center gap-1 text-green-600 font-semibold text-sm">
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        Done
-                      </div>
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
                     )}
                   </div>
                 </div>
@@ -208,6 +228,21 @@ export default function Dashboard() {
             })}
           </div>
         )}
+      </div>
+
+      {/* Motivational Message (moved from Calendar) */}
+      <div className="bg-white rounded-xl p-4 mt-6 text-center shadow-md border border-slate-200 flex-shrink-0">
+        <p className="text-sm text-slate-700 font-medium">
+          {totalCount === 0
+            ? '🌱 No habits yet. Create one to get started.'
+            : completedCount === 0
+            ? '🌱 Start your journey today! Every great streak begins with day one.'
+            : completionPercentage < 50
+            ? '🌟 Great start! Keep the momentum going!'
+            : completionPercentage < 100
+            ? "🔥 You're on fire! Keep going!"
+            : '🏆 Incredible! All habits completed today!'}
+        </p>
       </div>
 
       {/* New Habit Modal */}
@@ -220,126 +255,6 @@ export default function Dashboard() {
           }}
         />
       )}
-    </div>
-  )
-}
-
-function NewHabitModal({ onClose, onSuccess }) {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [emoji, setEmoji] = useState('✅')
-  const [loading, setLoading] = useState(false)
-
-  const emojiOptions = ['✅', '💧', '📚', '🏃', '🧘', '🥗', '😴', '💪', '🎯', '🌟', '🎨', '🎵', '🧠', '❤️']
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-
-    try {
-      await api.createHabit({
-        title,
-        description,
-        emoji,
-        frequency: 'daily',
-      })
-      onSuccess()
-    } catch (error) {
-      console.error('Failed to create habit:', error)
-      alert('Failed to create habit. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl p-6 sm:p-8 w-full max-w-[95vw] sm:max-w-lg max-h-[85vh] sm:max-h-[90vh] overflow-y-auto shadow-xl">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-slate-900">
-            Create New Habit
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-          >
-            <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-3">Choose an Emoji</label>
-            <div className="flex gap-2 flex-wrap">
-              {emojiOptions.map((e) => (
-                <button
-                  key={e}
-                  type="button"
-                  onClick={() => setEmoji(e)}
-                  className={`text-3xl p-3 rounded-lg transition-colors ${
-                    emoji === e
-                      ? 'bg-blue-100 ring-2 ring-blue-500'
-                      : 'bg-slate-100 hover:bg-slate-200'
-                  }`}
-                >
-                  {e}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Habit Name</label>
-            <input
-              type="text"
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-              placeholder="e.g., Drink 8 glasses of water"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Description <span className="text-slate-400 font-normal">(optional)</span>
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors resize-none"
-              rows="3"
-              placeholder="Why is this important to you?"
-            />
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-6 py-3 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors font-semibold text-slate-700"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  Creating...
-                </span>
-              ) : (
-                'Create Habit'
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
   )
 }
