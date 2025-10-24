@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Simple fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Gradient text selection */
+::selection {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* Focus ring improvements */
+*:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Prevent horizontal overflow on small/mobile viewports.
+   This avoids unwanted horizontal scrolling caused by fixed elements,
+   modals, or occasional 100vw-like widths. Keep it minimal and safe.
+*/
+html, body, #root {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: hidden;
+}
