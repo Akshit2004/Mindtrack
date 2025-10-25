@@ -3,22 +3,37 @@ import { api } from '../utils/api'
 import { format } from 'date-fns'
 import NewHabitModal from '../components/NewHabitModal'
 import { useAuth } from '../contexts/AuthContext'
+import PersonalQuote from '../components/PersonalQuote'
 
 export default function Dashboard() {
   const [habits, setHabits] = useState([])
   const [loading, setLoading] = useState(true)
   const [showNewHabit, setShowNewHabit] = useState(false)
+  const { user, loading: authLoading } = useAuth()
 
+  // Load habits when user is available so we can filter by their uid
   useEffect(() => {
-    loadData()
-  }, [])
-
-  const { user } = useAuth()
+    // Wait for auth to resolve
+    if (authLoading) return
+    if (user && user.uid) {
+      loadData()
+    } else {
+      // Not logged in: clear and stop loading
+      setHabits([])
+      setLoading(false)
+    }
+  }, [user?.uid, authLoading])
 
   const loadData = async () => {
     try {
       setLoading(true)
-      const habitsData = await api.getHabits(user && user.uid ? { userId: user.uid } : {})
+      // Require a user to be present; otherwise don't fetch global habits.
+      if (!user || !user.uid) {
+        setHabits([])
+        return
+      }
+      // Fetch habits scoped to the signed-in user's uid
+      const habitsData = await api.getHabits({ userId: user.uid })
 
       // Filter habits: only show habits created on or before today
       const today = new Date()
@@ -58,7 +73,7 @@ export default function Dashboard() {
   const totalCount = habits.length
   const completionPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center animate-fade-in">
@@ -74,6 +89,9 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Personalized Quote (Yesterday) */}
+      <PersonalQuote />
+
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">
