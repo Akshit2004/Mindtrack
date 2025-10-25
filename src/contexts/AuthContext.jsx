@@ -10,9 +10,15 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     // Check if user is already logged in
     const token = api.getToken()
-    if (token) {
-      // In a real app, you might want to validate the token with the backend
-      // For now, we'll just check if it exists
+    const stored = localStorage.getItem('user')
+    if (stored) {
+      try {
+        setUser(JSON.parse(stored))
+      } catch (err) {
+        // ignore parse error
+      }
+    } else if (token) {
+      // token exists but we don't have user profile cached — set a minimal object
       setUser({ token })
     }
     setLoading(false)
@@ -22,6 +28,7 @@ export function AuthProvider({ children }) {
     try {
       const data = await api.login(email, password)
       setUser(data.user)
+      try { localStorage.setItem('user', JSON.stringify(data.user)) } catch (e) {}
       return { success: true, user: data.user }
     } catch (error) {
       return { success: false, error: error.message }
@@ -32,6 +39,7 @@ export function AuthProvider({ children }) {
     try {
       const data = await api.register(email, password, displayName, timezone)
       setUser(data.user)
+      try { localStorage.setItem('user', JSON.stringify(data.user)) } catch (e) {}
       return { success: true, user: data.user }
     } catch (error) {
       return { success: false, error: error.message }
@@ -41,6 +49,7 @@ export function AuthProvider({ children }) {
   const logout = () => {
     api.logout()
     setUser(null)
+    try { localStorage.removeItem('user') } catch (e) {}
   }
 
   const value = {

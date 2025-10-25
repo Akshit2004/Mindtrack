@@ -2,27 +2,23 @@ import { useState, useEffect } from 'react'
 import { api } from '../utils/api'
 import { format } from 'date-fns'
 import NewHabitModal from '../components/NewHabitModal'
+import { useAuth } from '../contexts/AuthContext'
 
 export default function Dashboard() {
   const [habits, setHabits] = useState([])
   const [loading, setLoading] = useState(true)
-  const [todayCheckins, setTodayCheckins] = useState(new Set())
   const [showNewHabit, setShowNewHabit] = useState(false)
 
   useEffect(() => {
     loadData()
   }, [])
 
+  const { user } = useAuth()
+
   const loadData = async () => {
     try {
       setLoading(true)
-      const [habitsData, checkinsData] = await Promise.all([
-        api.getHabits(),
-        api.getCheckins({
-          from: format(new Date(), 'yyyy-MM-dd'),
-          to: format(new Date(), 'yyyy-MM-dd'),
-        }),
-      ])
+      const habitsData = await api.getHabits(user && user.uid ? { userId: user.uid } : {})
 
       // Filter habits: only show habits created on or before today
       const today = new Date()
@@ -33,13 +29,6 @@ export default function Dashboard() {
       })
 
       setHabits(filteredHabits)
-
-      // Build set of today's checkins
-      const checkinSet = new Set()
-      checkinsData.forEach((checkin) => {
-        checkinSet.add(checkin.habitId)
-      })
-      setTodayCheckins(checkinSet)
     } catch (error) {
       console.error('Failed to load data:', error)
     } finally {
@@ -49,19 +38,13 @@ export default function Dashboard() {
 
   const handleToggleCheckin = async (habit) => {
     try {
-      if (todayCheckins.has(habit.id) || habit.is_completed === true) {
+      if (habit.is_completed === true) {
         return
       }
 
-      await api.createCheckin(habit.id, {
-        checkedAt: new Date().toISOString(),
-        quantity: 1,
-      })
-
-      // Persist completion status on the habit itself
+      // Persist completion status on the habit itself in Firestore
       await api.updateHabit(habit.id, { is_completed: true })
 
-      setTodayCheckins(new Set([...todayCheckins, habit.id]))
       // Optimistically reflect completion on local habit state
       setHabits((prev) => prev.map(h => h.id === habit.id ? { ...h, is_completed: true } : h))
     } catch (error) {
@@ -69,8 +52,8 @@ export default function Dashboard() {
     }
   }
 
-  // Consider a habit completed if it has a today check-in OR the document says it's completed
-  const isHabitCompleted = (habit) => todayCheckins.has(habit.id) || habit.is_completed === true
+  // Consider a habit completed if the document says it's completed
+  const isHabitCompleted = (habit) => habit.is_completed === true
   const completedCount = habits.filter(isHabitCompleted).length
   const totalCount = habits.length
   const completionPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0

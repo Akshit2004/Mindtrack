@@ -93,7 +93,7 @@ export default function Calendar() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Current Streak */}
           <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-5 shadow-lg text-white">
             <div className="flex items-center justify-between mb-2">
@@ -197,15 +197,7 @@ export default function Calendar() {
                   <button
                     key={dateStr}
                     onClick={() => setSelectedDay(selectedDay === dateStr ? null : dateStr)}
-                    className={`
-                      relative aspect-square rounded-xl border-2 transition-all
-                      ${style.bg} ${style.border} ${style.text}
-                      ${isCurrentDay ? 'ring-4 ring-green-400 ring-offset-2' : ''}
-                      ${!isCurrentMonth ? 'opacity-30' : 'hover:scale-105 hover:shadow-lg'}
-                      ${selectedDay === dateStr ? 'scale-95 shadow-inner' : ''}
-                      flex flex-col items-center justify-center gap-1
-                      font-bold text-sm sm:text-base
-                    `}
+                      className={`relative aspect-square rounded-xl transition-all ${style.bg} ${style.text} ${isCurrentDay ? 'ring-4 ring-green-400 ring-offset-2' : ''} ${!isCurrentMonth ? 'opacity-30' : 'hover:scale-105 hover:shadow-lg'} ${selectedDay === dateStr ? 'scale-95 shadow-inner' : ''} flex flex-col items-center justify-center gap-1 font-bold text-sm sm:text-base`}
                     title={`${format(day, 'MMM d')}: ${count} habits completed`}
                   >
                     <span>{format(day, 'd')}</span>

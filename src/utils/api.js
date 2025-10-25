@@ -93,8 +93,10 @@ class ApiClient {
   }
 
   // Habits
-  async getHabits() {
-    return this.request('/v1/habits')
+  // Allow fetching habits with optional query params, e.g. { userId }
+  async getHabits(params = {}) {
+    const qs = new URLSearchParams(params).toString()
+    return this.request(`/v1/habits${qs ? `?${qs}` : ''}`)
   }
 
   async createHabit(habitData) {

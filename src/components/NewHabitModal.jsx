@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { api } from '../utils/api'
+import { useAuth } from '../contexts/AuthContext'
 
 export default function NewHabitModal({ onClose, onSuccess }) {
+  const { user } = useAuth()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [emoji, setEmoji] = useState('✅')
@@ -37,13 +39,15 @@ export default function NewHabitModal({ onClose, onSuccess }) {
     setLoading(true)
 
     try {
-      await api.createHabit({
+      const body = {
         title,
         description,
         emoji,
         frequency,
         is_completed: isCompleted,
-      })
+      }
+      if (user && user.uid) body.userId = user.uid
+      await api.createHabit(body)
       onSuccess()
     } catch (error) {
       console.error('Failed to create habit:', error)

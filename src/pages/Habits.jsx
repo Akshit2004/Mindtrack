@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { api } from '../utils/api'
+import { useAuth } from '../contexts/AuthContext'
 import { format, parseISO } from 'date-fns'
 
 export default function Habits() {
@@ -11,6 +12,7 @@ export default function Habits() {
   // Pagination by date: we build a list of unique dates (yyyy-MM-dd) and allow navigating between them
   const [dates, setDates] = useState([])
   const [selectedDateIndex, setSelectedDateIndex] = useState(0)
+  const { user } = useAuth()
 
   useEffect(() => {
     loadHabits()
@@ -19,7 +21,9 @@ export default function Habits() {
   const loadHabits = async () => {
     try {
       setLoading(true)
-      const data = await api.getHabits()
+      const params = {}
+      if (user && user.uid) params.userId = user.uid
+      const data = await api.getHabits(params)
       setHabits(data)
 
       // Build unique date list sorted desc (by createdAt date)
@@ -177,6 +181,7 @@ export default function Habits() {
 }
 
 function HabitModal({ habit, onClose, onSuccess }) {
+  const { user } = useAuth()
   const [title, setTitle] = useState(habit?.title || '')
   const [description, setDescription] = useState(habit?.description || '')
   const [emoji, setEmoji] = useState(habit?.emoji || '✅')
@@ -194,7 +199,9 @@ function HabitModal({ habit, onClose, onSuccess }) {
       if (habit) {
         await api.updateHabit(habit.id, { title, description, emoji, frequency, is_completed: isCompleted })
       } else {
-        await api.createHabit({ title, description, emoji, frequency, is_completed: isCompleted })
+        const body = { title, description, emoji, frequency, is_completed: isCompleted }
+        if (user && user.uid) body.userId = user.uid
+        await api.createHabit(body)
       }
       onSuccess()
     } catch (error) {

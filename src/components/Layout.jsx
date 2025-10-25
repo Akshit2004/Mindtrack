@@ -108,7 +108,6 @@ export default function Layout({ children }) {
             <p className="text-sm text-slate-600">
               Made with 💜 by <span className="font-bold text-slate-900">MetaLogic</span>
             </p>
-            <p className="text-xs text-slate-500 mt-1">© 2025 All rights reserved</p>
           </div>
         </footer>
       </div>
