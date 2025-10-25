@@ -8,17 +8,14 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check if user is already logged in
     const token = api.getToken()
     const stored = localStorage.getItem('user')
     if (stored) {
       try {
         setUser(JSON.parse(stored))
       } catch (err) {
-        // ignore parse error
       }
     } else if (token) {
-      // token exists but we don't have user profile cached — set a minimal object
       setUser({ token })
     }
     setLoading(false)
@@ -64,7 +61,6 @@ export function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext)
   if (!context) {

@@ -26,7 +26,6 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
-  // Node backend override
   {
     files: ['backend/**/*.js'],
     languageOptions: {
@@ -37,8 +36,6 @@ export default defineConfig([
         sourceType: 'module',
       },
     },
-    rules: {
-      // Backend files are Node, so allow process, require Node globals
-    },
+    rules: {},
   },
 ])

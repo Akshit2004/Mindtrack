@@ -4,7 +4,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import { api } from '../utils/api'
 import { useAuth } from '../contexts/AuthContext'
 
-// Cache per user+date to avoid repeated calls & keep message stable for the day
 const makeCacheKey = (uid, dateStr) => `personalQuote:${uid}:${dateStr}`
 
 export default function PersonalQuote() {
@@ -29,7 +28,6 @@ export default function PersonalQuote() {
           return
         }
 
-        // Return cached line if present
         const cacheKey = makeCacheKey(user.uid, ymd)
         const cached = sessionStorage.getItem(cacheKey)
         if (cached) {
@@ -38,7 +36,6 @@ export default function PersonalQuote() {
           return
         }
 
-        // Load habits and yesterday check-ins
         const habits = await api.getHabits({ userId: user.uid })
         const habitMap = new Map(habits.map(h => [h.id, h]))
 
@@ -50,7 +47,6 @@ export default function PersonalQuote() {
 
         let titles = finishedTitlesYesterday
         if (!titles.length) {
-          // Fallback: habits marked completed (if you’re using global completion flag)
           titles = habits.filter(h => h.is_completed === true).map(h => h.title)
         }
 
@@ -60,10 +56,8 @@ export default function PersonalQuote() {
           return
         }
 
-        // Pick ONE activity to keep the line focused & personal
         const selectedTitle = titles[Math.floor(Math.random() * titles.length)]
 
-        // Category & benefit mapping to guide tone and fallback
         const categories = {
           music: { keys: ['music', 'song', 'listen', 'playlist', 'spotify'], benefit: 'boosted creativity' },
           reading: { keys: ['read', 'book', 'reading', 'chapter'], benefit: 'built focus' },
@@ -81,7 +75,6 @@ export default function PersonalQuote() {
         const cat = detectCategory(selectedTitle)
         const benefit = cat ? categories[cat].benefit : 'kept your momentum'
 
-        // Try Gemini for a short, personal, varied line
         let generated = ''
         if (apiKey) {
           try {
@@ -107,12 +100,10 @@ Vary phrasing across requests (be creative). Output only the sentence.`
             const resp = await result.response
             generated = (resp?.text?.() || resp?.text || '').trim()
           } catch {
-            // Fall through to local fallback
           }
         }
 
         if (!generated) {
-          // Local fallback that stays aligned with the personal/benefit guidance
           generated = `${user?.displayName ? user.displayName : 'You'} nailed ${selectedTitle} — ${benefit}. Keep going!`
         }
 

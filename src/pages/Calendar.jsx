@@ -72,7 +72,7 @@ export default function Calendar() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      {/* Header Section */}
+      
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -92,9 +92,8 @@ export default function Calendar() {
           </button>
         </div>
 
-        {/* Stats Cards */}
   <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Current Streak */}
+          
           <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-5 shadow-lg text-white">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-semibold opacity-90">Current Streak</p>
@@ -104,7 +103,7 @@ export default function Calendar() {
             <p className="text-xs opacity-80">days in a row</p>
           </div>
 
-          {/* Longest Streak */}
+          
           <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-5 shadow-lg text-white">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-semibold opacity-90">Best Streak</p>
@@ -114,7 +113,7 @@ export default function Calendar() {
             <p className="text-xs opacity-80">personal record</p>
           </div>
 
-          {/* Total Days */}
+          
           <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl p-5 shadow-lg text-white">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-semibold opacity-90">Active Days</p>
@@ -124,7 +123,7 @@ export default function Calendar() {
             <p className="text-xs opacity-80">this month</p>
           </div>
 
-          {/* Motivation Card */}
+          
           <div className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl p-5 shadow-lg text-white">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-semibold opacity-90">Status</p>
@@ -135,9 +134,8 @@ export default function Calendar() {
         </div>
       </div>
 
-      {/* Calendar Card */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-200 max-w-4xl mx-auto">
-        {/* Month Navigation */}
+        
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={previousMonth}
@@ -174,7 +172,7 @@ export default function Calendar() {
           </div>
         ) : (
           <>
-            {/* Weekday Headers */}
+            
             <div className="grid grid-cols-7 gap-2 sm:gap-3 mb-4">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                 <div key={day} className="text-center py-2">
@@ -183,7 +181,7 @@ export default function Calendar() {
               ))}
             </div>
 
-            {/* Calendar Grid */}
+            
             <div className="grid grid-cols-7 gap-2 sm:gap-3">
               {calendarDays.map((day) => {
                 const dateStr = format(day, 'yyyy-MM-dd')
@@ -214,7 +212,7 @@ export default function Calendar() {
               })}
             </div>
 
-            {/* Legend */}
+            
             <div className="mt-8 pt-6 border-t border-slate-200">
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 <span className="text-xs font-bold text-slate-600">Less</span>

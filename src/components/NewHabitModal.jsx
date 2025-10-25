@@ -63,7 +63,6 @@ export default function NewHabitModal({ onClose, onSuccess }) {
         className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 px-6 sm:px-8 py-6">
           <button
             onClick={onClose}
@@ -79,10 +78,8 @@ export default function NewHabitModal({ onClose, onSuccess }) {
           </div>
         </div>
 
-        {/* Form Content */}
         <div className="px-6 sm:px-8 py-6 overflow-y-auto max-h-[calc(90vh-140px)]">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Emoji Selection */}
             <div>
               <label className="block text-sm font-bold text-slate-800 mb-3">
                 Choose an Icon
@@ -111,7 +108,6 @@ export default function NewHabitModal({ onClose, onSuccess }) {
               </div>
             </div>
 
-            {/* Habit Name */}
             <div>
               <label className="block text-sm font-bold text-slate-800 mb-2">
                 Habit Name <span className="text-red-500">*</span>
@@ -128,7 +124,6 @@ export default function NewHabitModal({ onClose, onSuccess }) {
               <p className="text-xs text-slate-500 mt-1">{title.length}/50 characters</p>
             </div>
 
-            {/* Description */}
             <div>
               <label className="block text-sm font-bold text-slate-800 mb-2">
                 Description <span className="text-slate-400 font-normal text-xs">(optional)</span>
@@ -144,7 +139,6 @@ export default function NewHabitModal({ onClose, onSuccess }) {
               <p className="text-xs text-slate-500 mt-1">{description.length}/200 characters</p>
             </div>
 
-            {/* Frequency */}
             <div>
               <label className="block text-sm font-bold text-slate-800 mb-3">
                 Frequency
@@ -177,11 +171,8 @@ export default function NewHabitModal({ onClose, onSuccess }) {
                   </button>
                 ))}
               </div>
-
-              {/* No custom frequency option - only predefined frequencies allowed */}
             </div>
 
-            {/* Action Buttons */}
             <div className="flex gap-3 pt-4">
               <button
                 type="button"

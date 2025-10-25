@@ -11,14 +11,11 @@ export default function Dashboard() {
   const [showNewHabit, setShowNewHabit] = useState(false)
   const { user, loading: authLoading } = useAuth()
 
-  // Load habits when user is available so we can filter by their uid
   useEffect(() => {
-    // Wait for auth to resolve
     if (authLoading) return
     if (user && user.uid) {
       loadData()
     } else {
-      // Not logged in: clear and stop loading
       setHabits([])
       setLoading(false)
     }
@@ -27,18 +24,15 @@ export default function Dashboard() {
   const loadData = async () => {
     try {
       setLoading(true)
-      // Require a user to be present; otherwise don't fetch global habits.
       if (!user || !user.uid) {
         setHabits([])
         return
       }
-      // Fetch habits scoped to the signed-in user's uid
       const habitsData = await api.getHabits({ userId: user.uid })
 
-      // Filter habits: only show habits created on or before today
       const today = new Date()
       const filteredHabits = habitsData.filter((habit) => {
-        if (!habit.createdAt) return true // Include habits without createdAt
+        if (!habit.createdAt) return true
         const habitCreatedDate = new Date(habit.createdAt)
         return habitCreatedDate <= today
       })
@@ -57,17 +51,14 @@ export default function Dashboard() {
         return
       }
 
-      // Persist completion status on the habit itself in Firestore
       await api.updateHabit(habit.id, { is_completed: true })
 
-      // Optimistically reflect completion on local habit state
       setHabits((prev) => prev.map(h => h.id === habit.id ? { ...h, is_completed: true } : h))
     } catch (error) {
       console.error('Failed to create checkin:', error)
     }
   }
 
-  // Consider a habit completed if the document says it's completed
   const isHabitCompleted = (habit) => habit.is_completed === true
   const completedCount = habits.filter(isHabitCompleted).length
   const totalCount = habits.length
@@ -89,10 +80,8 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Personalized Quote (Yesterday) */}
       <PersonalQuote />
 
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">
           Today's Progress
@@ -100,7 +89,6 @@ export default function Dashboard() {
         <p className="text-slate-600">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
       </div>
 
-      {/* Progress Card */}
       <div className="bg-white rounded-2xl p-8 mb-8 shadow-md border border-slate-200">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -115,7 +103,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Progress Bar */}
         <div className="relative w-full bg-slate-200 rounded-full h-3 overflow-hidden">
           <div
             className="absolute top-0 left-0 h-full bg-blue-600 rounded-full transition-all duration-500"
@@ -134,7 +121,6 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Habits List */}
       <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-md border border-slate-200">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Today's Habits</h2>
@@ -180,7 +166,6 @@ export default function Dashboard() {
                   }`}
                   onClick={() => !isCompleted && handleToggleCheckin(habit)}
                 >
-                  {/* Checkbox */}
                   <button
                     className={`flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center transition-all ${
                       isCompleted
@@ -195,12 +180,10 @@ export default function Dashboard() {
                     )}
                   </button>
 
-                  {/* Emoji */}
                   <div className={`text-xl sm:text-2xl flex-shrink-0 ${isCompleted ? 'opacity-50' : ''}`}>
                     {habit.emoji}
                   </div>
 
-                  {/* Content */}
                   <div className="flex-1 min-w-0 flex items-center gap-1 sm:gap-2">
                     <h3 className={`text-sm sm:text-base font-semibold truncate ${isCompleted ? 'line-through text-slate-500' : 'text-slate-900'}`}>
                       {habit.title}
@@ -212,7 +195,6 @@ export default function Dashboard() {
                     )}
                   </div>
 
-                  {/* Frequency Badge & Status */}
                   <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                     <span className="px-2 py-1 sm:px-3 sm:py-1.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold whitespace-nowrap">
                       {habit.frequency === 'daily' ? 'Daily' : habit.frequency}
@@ -231,7 +213,6 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Motivational Message (moved from Calendar) */}
       <div className="bg-white rounded-xl p-4 mt-6 text-center shadow-md border border-slate-200 flex-shrink-0">
         <p className="text-sm text-slate-700 font-medium">
           {totalCount === 0
@@ -246,7 +227,6 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* New Habit Modal */}
       {showNewHabit && (
         <NewHabitModal
           onClose={() => setShowNewHabit(false)}

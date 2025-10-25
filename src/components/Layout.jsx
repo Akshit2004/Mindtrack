@@ -17,12 +17,10 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen flex bg-slate-50 overflow-x-hidden">
-      {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-200 lg:translate-x-0 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="flex flex-col h-full">
-          {/* Logo */}
           <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-200">
             <div className="text-3xl">🧘</div>
             <div>
@@ -31,7 +29,6 @@ export default function Layout({ children }) {
             </div>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 px-3 py-6 space-y-1">
             {navigation.map((item) => (
               <Link
@@ -50,7 +47,6 @@ export default function Layout({ children }) {
             ))}
           </nav>
 
-          {/* Logout Button */}
           <div className="p-4 border-t border-slate-200">
             <button
               onClick={logout}
@@ -65,7 +61,6 @@ export default function Layout({ children }) {
         </div>
       </aside>
 
-      {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -73,9 +68,7 @@ export default function Layout({ children }) {
         />
       )}
 
-      {/* Main content area */}
       <div className="flex-1 flex flex-col lg:ml-64">
-        {/* Header */}
         <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
           <div className="px-4 py-4 flex items-center justify-between">
             <button
@@ -97,12 +90,10 @@ export default function Layout({ children }) {
           </div>
         </header>
 
-        {/* Main Content */}
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>
 
-        {/* Footer */}
         <footer className="bg-white border-t border-slate-200 py-6">
           <div className="px-4 text-center">
             <p className="text-sm text-slate-600">

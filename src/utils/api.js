@@ -1,9 +1,6 @@
-// Build API base URL by joining VITE_BACKEND_URL (host) and VITE_API_BASE_URL (path)
-// so the final URL matches the backend mount (e.g. http://localhost:5000/api).
-const BACKEND_HOST = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'
+const BACKEND_HOST = import.meta.env.VITE_BACKEND_URL || 'https://mindtrack-backend-5s56.onrender.com'
 const API_PATH = import.meta.env.VITE_API_BASE_URL || '/api'
 
-// Ensure no duplicate slashes when joining
 function joinUrl(host, path) {
   const h = host.replace(/\/$/, '')
   const p = path.startsWith('/') ? path : `/${path}`
@@ -57,7 +54,9 @@ class ApiClient {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || `HTTP ${response.status}`)
+        const detailPart = data && data.details ? `: ${data.details}` : ''
+        const message = (data && data.error ? `${data.error}${detailPart}` : `HTTP ${response.status}`)
+        throw new Error(message)
       }
 
       return data
@@ -67,7 +66,6 @@ class ApiClient {
     }
   }
 
-  // Auth
   async register(email, password, displayName, timezone) {
     const data = await this.request('/v1/auth/register', {
       method: 'POST',
@@ -92,8 +90,6 @@ class ApiClient {
     this.setToken(null)
   }
 
-  // Habits
-  // Allow fetching habits with optional query params, e.g. { userId }
   async getHabits(params = {}) {
     const qs = new URLSearchParams(params).toString()
     return this.request(`/v1/habits${qs ? `?${qs}` : ''}`)
@@ -119,7 +115,6 @@ class ApiClient {
     })
   }
 
-  // Check-ins
   async createCheckin(habitId, checkinData) {
     return this.request(`/v1/habits/${habitId}/checkins`, {
       method: 'POST',
@@ -132,7 +127,6 @@ class ApiClient {
     return this.request(`/v1/checkins${queryString ? `?${queryString}` : ''}`)
   }
 
-  // Analytics
   async getCalendar(year, month) {
     return this.request(`/v1/analytics/calendar?year=${year}&month=${month}`)
   }

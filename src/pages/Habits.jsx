@@ -9,7 +9,6 @@ export default function Habits() {
   const [editingHabit, setEditingHabit] = useState(null)
   const [showNewHabit, setShowNewHabit] = useState(false)
 
-  // Pagination by date: we build a list of unique dates (yyyy-MM-dd) and allow navigating between them
   const [dates, setDates] = useState([])
   const [selectedDateIndex, setSelectedDateIndex] = useState(0)
   const { user } = useAuth()
@@ -26,7 +25,6 @@ export default function Habits() {
       const data = await api.getHabits(params)
       setHabits(data)
 
-      // Build unique date list sorted desc (by createdAt date)
       const dateSet = new Set()
       data.forEach((h) => {
         const d = h.createdAt ? format(parseISO(h.createdAt), 'yyyy-MM-dd') : 'unknown'
@@ -56,7 +54,6 @@ export default function Habits() {
     }
   }
 
-  // Group habits by date (yyyy-MM-dd)
   const groups = useMemo(() => {
     const map = {}
     habits.forEach((h) => {
@@ -99,7 +96,6 @@ export default function Habits() {
         </div>
       </div>
 
-      {/* Date pagination controls */}
       <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-3 mb-4">
         <div className="flex items-center gap-2">
           <button onClick={goPrevDate} disabled={selectedDateIndex >= dates.length - 1} className="p-2 rounded-md hover:bg-slate-100 disabled:opacity-50">
@@ -155,7 +151,6 @@ export default function Habits() {
         )}
       </div>
 
-      {/* Modals */}
       {showNewHabit && (
         <HabitModal
           onClose={() => setShowNewHabit(false)}

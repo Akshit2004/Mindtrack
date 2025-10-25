@@ -29,7 +29,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-blue-50 to-slate-50">
       <div className="max-w-md w-full">
-        {/* Logo */}
+        
         <div className="text-center mb-8">
           <div className="text-6xl mb-4">🧘</div>
           <h1 className="text-3xl font-bold text-slate-900 mb-2">
@@ -38,7 +38,7 @@ export default function Login() {
           <p className="text-slate-600">Sign in to continue your wellness journey</p>
         </div>
 
-        {/* Form Card */}
+        
         <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-200">
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2">
@@ -104,7 +104,7 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Footer Text */}
+        
         <p className="text-center text-xs text-slate-500 mt-6">
           By continuing, you agree to our Terms & Privacy Policy
         </p>
